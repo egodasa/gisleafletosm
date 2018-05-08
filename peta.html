@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Contoh Leaflet</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+        crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+    <style>
+        button {
+            border-radius: 5px;
+            background-color: lightblue;
+            color: black;
+            box-shadow: 1px;
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <div id="mapid" style="width: 600px; height: 400px;"></div>
+    <hr/>
+    <label for="lang">Langitude</label>
+    <input type="number" id="lang" />
+    <label for="long">Longitude</label>
+    <input type="number" id="long" />
+    <hr/>
+    <button type="button" onclick="addMarker(document.getElementById('lang').value, document.getElementById('long').value)">Tambah Marker</button>
+    <hr/>
+    <ol id="listMarker"></ol>
+    <script>
+
+        //Defenisi posisi awal peta
+        var token = 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA';
+        var posisi = [-0.9707951927943261, 100.38703680038454];
+        var zoom = 17;
+        var mymap = L.map('mapid').setView(posisi, zoom);
+        var daftarMarker = [];
+        var daftarPoint = []
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            id: 'mapbox.streets'
+        }).addTo(mymap);
+        //EOF Defenisi posisi awal peta
+
+        //Defenisi marker dengan turf
+        var point1 = turf.multiPoint([
+            [100.387122631073, -0.97],
+            [100.387122631073, -0.971]
+            ], {pesan: "Pesan anu"});
+
+        //Menciptakan geojson dengan turf berdasarkan data sebelumnya
+        var geojsonFeature = turf.featureCollection([
+            point1
+        ]);
+
+        //Menjalankan geojson menggunakan leaflet
+        L.geoJSON(geojsonFeature, {
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup(feature.properties.pesan);
+            }
+        }).addTo(mymap);
+
+        //Event
+        mymap.on('click', onMapClick);
+
+        //Method
+        function addMarker(x, y) {
+            daftarMarker.push(L.marker([x, y]).addTo(mymap));
+            console.log(mymap.getBounds())
+        }
+
+        function onMapClick(e) {
+            document.getElementById('lang').value = e.latlng.lat;
+            document.getElementById('long').value = e.latlng.lng;
+            L.popup().setLatLng(e.latlng).setContent("<button type='button'>Tambah marker</button>").openOn(mymap);
+        }
+
+        function getDaftarMarker() {
+            var listMarker = document.getElementById('lismarker');
+            if (daftarMarker.length != 0) {
+                var isiList = ''
+                for (var x = 1; x <= daftarMarker.length; x++) {
+                    isiList += '<li> Latitude : ' + daftarMarker[x]._latlng.lat + ' , Longitude : ' + daftarMarker[x]._latlng
+                        .lng + '</li>'
+                }
+                listMarker.innerHTML = isiList
+            } else {
+                listMarker.innerHTML = '<li>Data Kosong</li>';
+            }
+        }
+
+        //example of geojson data
+/*
+var geojsonFeature = {
+            "type": "FeatureCollection",
+            "features": [{
+                    "type": "Feature",
+                    "properties": {"color": "#ff0000"},
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            100.38792000907256, -0.9708189579665882
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [
+                                100.38624631064727, -0.9707760487823991
+                            ],
+                            [
+                                100.38622485297515, -0.971183686010187
+                            ],
+                            [
+                                100.38540946143462, -0.971183686010187
+                            ],
+                            [
+                                100.38624631064727, -0.9707760487823991
+                            ]
+                        ]
+                    },
+                    "properties": {}
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [
+                                    100.38689004081084, -0.9697569554979427
+                                ],
+                                [
+                                    100.38689004081084, -0.9707653214862564
+                                ],
+                                [
+                                    100.38720117705657, -0.9707653214862564
+                                ],
+                                [
+                                    100.38722263472869, -0.9697247735997439
+                                ],
+                                [
+                                    100.38689004081084, -0.9697569554979427
+                                ]
+                            ]
+                        ]
+                    },
+                    "properties": {}
+                }
+            ]
+        };
+*/
+    </script>
+
+
+
+</body>
+
+</html>
