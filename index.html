@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Quick Start - Leaflet</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="vue.js"></script>
+    <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+    <link rel="stylesheet" href="w3.css" />
+    <link rel="stylesheet" href="leaflet.css" />
+    <script src="leaflet.js"></script>
+    <script src="turf.min.js"></script>
+    <link rel="stylesheet" href="leaflet.pm.css" />
+    <script src="leaflet.pm.min.js"></script>
+</head>
+<body>
+    <div id="mapid" style="width: 600px; height: 400px;"></div>
+    <hr/>
+    <script>
+    var htmlPopUp = '<div id="popUp">' +
+        'Warna Isian: <input type="color" v-model="poligon.fillColor" /><br/>' +
+        'Warna Pembatas: <input type="color" v-model="poligon.color" /><br/>' +
+        'Besar Strip Pembatas: <input type="number" v-model="poligon.dashArray" /><br/>' +
+        'Ketebalan Pembatas: <input type="number" v-model="poligon.weight" /><br/>' +
+        'Besar Transparant: <input type="number" v-model.Number="poligon.fillOpacity" step="0.1" /><br/>' +
+        '<button type="button" onclick="addPolygon(e)">Terapkan</button>' +
+        '</div>';
+    var posisi = [-7.8312189550359586, 110.2565517439507];
+    var zoom = 13;
+    var token = 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA';
+    var mymap = null;
+    var options = {
+        position: 'topleft', // toolbar position, options are 'topleft', 'topright', 'bottomleft', 'bottomright'
+        drawMarker: false, // adds button to draw markers
+        drawPolyline: false, // adds button to draw a polyline
+        drawRectangle: true, // adds button to draw a rectangle
+        drawPolygon: true, // adds button to draw a polygon
+        drawCircle: false, // adds button to draw a cricle
+        cutPolygon: false, // adds button to cut a hole in a polygon
+        editMode: false, // adds button to toggle edit mode for all layers
+        removalMode: false, // adds a button to remove layers
+    };
+    var point1 = null;
+    var geojsonFeature = null;
+    var polygonStyle = {
+            fillColor: '#800026',
+            weight: 2,
+            opacity: 1,
+            color: "white",
+            dashArray: '3',
+            fillOpacity: 0.7
+        };
+    var listPolygon = [];
+    var listGeoJson = [];
+    var geoJSON = null;
+    
+    //Setiap layer baru, di masukkan ke variabel ini agar bisa dihapus jika batal membuat polygon
+    var currentLayerJSON = null;
+    // EOF DATA
+    
+    //START OF METHOD
+    function el(x){
+        return document.getElementById(x);
+    }
+    function initMap(){
+        mymap = L.map('mapid').setView(posisi, zoom);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            id: 'mapid'
+            }).addTo(mymap);
+        mymap.pm.addControls(options);
+        mymap.on('pm:create', function(e){
+            //layer dimasukkan ke variabel agar bisa dihapus
+            currentLayerJSON = e;
+            
+            //Menampilkan popup untuk layer baru
+            e.layer.bindPopup(getPopUp(e.layer._latlngs), {className: "w3-panel"}).openPopup();
+        });
+        refreshMap();
+    };
+    function refreshMap(){
+        if(currentLayerJSON) {
+            currentLayerJSON.layer.remove();
+        }
+        if(geoJSON){
+            geoJSON.clearLayers();
+        }
+        this.mymap.closePopup();
+        if(listPolygon.length != 0){
+            listGeoJson = [];
+            for(var x = 0; x < listPolygon.length; x++){
+                listGeoJson.push(turf.polygon([listPolygon[x].marker], listPolygon[x].prop));
+            }
+            geojsonFeature = turf.featureCollection(listGeoJson);
+            geoJSON = L.geoJSON(geojsonFeature, {
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup(feature.properties.pesan + "<button class='w3-btn w3-red'>Hapus</button>");
+                },
+                style: function(feature){
+                    return feature.properties.style
+                }
+            }).addTo(mymap);
+            mymap.fitBounds(geoJSON.getBounds());
+        }
+    };
+    function addPolygon(x){
+        var y = [];
+        for(var z = 0; z < x[0].length; z++){
+            y.push([x[0][z].lng, x[0][z].lat])
+        }
+        y.push(y[0]);
+        listPolygon.push({marker: y,prop: {
+                    pesan: el("pesan").value,
+                    style: {
+                        fillColor: el("fillColor").value,
+                        weight: el("weight").value,
+                        opacity: 1,
+                        color: el("color").value,
+                        dashArray: el("dashArray").value,
+                        fillOpacity: el("fillOpacity").value
+                    }
+                }});
+        refreshMap();
+    };
+    function getPopUp(x){
+        x = JSON.stringify(x)
+        return "<div class='w3-container'>" +
+            "<label>Warna Isian</label> <input class='w3-input w3-border' type='color' id='fillColor' />" +
+            "<label>Warna Pembatas</label> <input class='w3-input w3-bordered' type='color' id='color' />" +
+            "<label>Besar Strip Pembatas</label> <input class='w3-input w3-bordered' type='number' id='dashArray' />" +
+            "<label>Ketebalan Pembatas</label> <input class='w3-input w3-bordered' type='number' id='weight' />" +
+            "<label>Besar Transparant</label> <input class='w3-input w3-bordered' type='number' id='fillOpacity' step='0.1' />" +
+            "<label>Isi Pesan</label> <textarea class='w3-input w3-bordered' id='pesan'></textarea>" +
+            "<button type='button' class='w3-btn w3-teal' onclick='addPolygon("+x+");'>Terapkan</button>" +
+            "<button type='button' class='w3-btn w3-red' onclick='currentLayerJSON.layer.remove(); refreshMap();'>Batal</button>";
+    };
+    removePolygon(x){
+        
+    }
+    //EOF METHOD
+    
+    //START OF PROGRAM
+    initMap();
+    
+    </script>
+</body>
+
+</html>
