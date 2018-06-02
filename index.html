@@ -17,17 +17,14 @@
     <script src="leaflet.pm.min.js"></script>
 </head>
 <body>
-    <div id="mapid" style="width: 600px; height: 400px;"></div>
-    <hr/>
+    <div class="container">
+        <p>Tambahkan poligon untuk melihat hasil</p>
+        <div id="mapid" style="width: 1000px; height: 500px;"></div>
+        <hr/>
+        <label>Hasil GeoJSON</label>
+        <textarea id="hasil" class="w3-input w3-border"></textarea>
+    </div>
     <script>
-    var htmlPopUp = '<div id="popUp">' +
-        'Warna Isian: <input type="color" v-model="poligon.fillColor" /><br/>' +
-        'Warna Pembatas: <input type="color" v-model="poligon.color" /><br/>' +
-        'Besar Strip Pembatas: <input type="number" v-model="poligon.dashArray" /><br/>' +
-        'Ketebalan Pembatas: <input type="number" v-model="poligon.weight" /><br/>' +
-        'Besar Transparant: <input type="number" v-model.Number="poligon.fillOpacity" step="0.1" /><br/>' +
-        '<button type="button" onclick="addPolygon(e)">Terapkan</button>' +
-        '</div>';
     var posisi = [-7.8312189550359586, 110.2565517439507];
     var zoom = 13;
     var token = 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA';
@@ -64,6 +61,10 @@
     //START OF METHOD
     function el(x){
         return document.getElementById(x);
+    }
+    function showHasil(){
+        if(listGeoJson) el("hasil").value = JSON.stringify(listGeoJson);
+        else el("hasil").value = null;
     }
     function initMap(){
         mymap = L.map('mapid').setView(posisi, zoom);
@@ -106,6 +107,7 @@
             }).addTo(mymap);
             mymap.fitBounds(geoJSON.getBounds());
         }
+        showHasil();
     };
     function addPolygon(x){
         var y = [];
@@ -128,19 +130,15 @@
     };
     function getPopUp(x){
         x = JSON.stringify(x)
-        return "<div class='w3-container'>" +
-            "<label>Warna Isian</label> <input class='w3-input w3-border' type='color' id='fillColor' />" +
-            "<label>Warna Pembatas</label> <input class='w3-input w3-bordered' type='color' id='color' />" +
-            "<label>Besar Strip Pembatas</label> <input class='w3-input w3-bordered' type='number' id='dashArray' />" +
-            "<label>Ketebalan Pembatas</label> <input class='w3-input w3-bordered' type='number' id='weight' />" +
-            "<label>Besar Transparant</label> <input class='w3-input w3-bordered' type='number' id='fillOpacity' step='0.1' />" +
-            "<label>Isi Pesan</label> <textarea class='w3-input w3-bordered' id='pesan'></textarea>" +
+        return "<div style='width:150px;'><p><label>Warna Isian</label> <input class='w3-input w3-border' type='color' id='fillColor' /></p>" +
+            "<p><label>Warna Pembatas</label> <input class='w3-input w3-border' type='color' id='color' /></p>" +
+            "<p><label>Besar Strip Pembatas</label> <input class='w3-input w3-border' type='number' id='dashArray' /></p>" +
+            "<p><label>Ketebalan Pembatas</label> <input class='w3-input w3-border' type='number' id='weight' /></p>" +
+            "<p><label>Besar Transparant</label> <input class='w3-input w3-border' type='number' id='fillOpacity' step='0.1' /></p>" +
+            "<p><label>Isi Pesan</label> <textarea class='w3-input w3-border' id='pesan'></textarea></p>" +
             "<button type='button' class='w3-btn w3-teal' onclick='addPolygon("+x+");'>Terapkan</button>" +
-            "<button type='button' class='w3-btn w3-red' onclick='currentLayerJSON.layer.remove(); refreshMap();'>Batal</button>";
+            "<button type='button' class='w3-btn w3-red' onclick='currentLayerJSON.layer.remove(); refreshMap();'>Batal</button></div>";
     };
-    removePolygon(x){
-        
-    }
     //EOF METHOD
     
     //START OF PROGRAM
