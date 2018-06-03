@@ -140,9 +140,9 @@
         x = JSON.stringify(x)
         return "<div style='width:200px; height: 150px; overflow-x:hidden; overflow-y:scroll;  '><p><label>Warna Isian</label> <input class='w3-input w3-border' type='color' id='fillColor' /></p>" +
             "<p><label>Warna Pembatas</label> <input class='w3-input w3-border' type='color' id='color' /></p>" +
-            "<p><label>Besar Strip Pembatas</label> <input class='w3-input w3-border' type='number' id='dashArray' /></p>" +
-            "<p><label>Ketebalan Pembatas</label> <input class='w3-input w3-border' type='number' id='weight' /></p>" +
-            "<p><label>Besar Transparant</label> <input class='w3-input w3-border' type='number' id='fillOpacity' step='0.1' /></p>" +
+            "<p><label>Besar Strip Pembatas</label> <input class='w3-input w3-border' type='number' id='dashArray'  min='0' max='10' /></p>" +
+            "<p><label>Ketebalan Pembatas</label> <input class='w3-input w3-border' type='number' id='weight' min='0' max='10' /></p>" +
+            "<p><label>Besar Transparant</label> <input class='w3-input w3-border' type='number' id='fillOpacity' step='0.1' min='0' max='1' /></p>" +
             "<p><label>Isi Pesan</label> <textarea class='w3-input w3-border' id='pesan'></textarea></p>" +
             "<button type='button' class='w3-btn w3-teal' onclick='addPolygon("+x+");'>Terapkan</button>" +
             "<button type='button' class='w3-btn w3-red' onclick='currentLayerJSON.layer.remove(); refreshMap();'>Batal</button></div>";
