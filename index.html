@@ -7,7 +7,6 @@
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="vue.js"></script>
     <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
     <link rel="stylesheet" href="w3.css" />
     <link rel="stylesheet" href="leaflet.css" />
@@ -19,13 +18,14 @@
 <body>
     <div class="container">
         <p>Tambahkan poligon untuk melihat hasil</p>
-        <div id="mapid" style="width: 1000px; height: 500px;"></div>
+        <div id="mapid" style="width: 500px; height: 500px;"></div>
         <hr/>
         <label>Hasil GeoJSON</label>
         <textarea id="hasil" class="w3-input w3-border"></textarea>
+        <button type="button" class="w3-btn w3-red" onclick="removeGeoJSON">Reset GeoJSON</button>
     </div>
     <script>
-    var posisi = [-7.8312189550359586, 110.2565517439507];
+    var posisi = [-0.942942, 100.371857];
     var zoom = 13;
     var token = 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA';
     var mymap = null;
@@ -40,8 +40,6 @@
         editMode: false, // adds button to toggle edit mode for all layers
         removalMode: false, // adds a button to remove layers
     };
-    var point1 = null;
-    var geojsonFeature = null;
     var polygonStyle = {
             fillColor: '#800026',
             weight: 2,
@@ -51,20 +49,18 @@
             fillOpacity: 0.7
         };
     var listPolygon = [];
-    var listGeoJson = [];
     var geoJSON = null;
-    
     //Setiap layer baru, di masukkan ke variabel ini agar bisa dihapus jika batal membuat polygon
     var currentLayerJSON = null;
+    var currentId = null;
     // EOF DATA
     
     //START OF METHOD
     function el(x){
         return document.getElementById(x);
     }
-    function showHasil(){
-        if(listGeoJson) el("hasil").value = JSON.stringify(listGeoJson);
-        else el("hasil").value = null;
+    function showHasil(x){
+        el("hasil").value = JSON.stringify(x);
     }
     function initMap(){
         mymap = L.map('mapid').setView(posisi, zoom);
@@ -81,7 +77,6 @@
             //Menampilkan popup untuk layer baru
             e.layer.bindPopup(getPopUp(e.layer._latlngs), {className: "w3-panel"}).openPopup();
         });
-        refreshMap();
     };
     function refreshMap(){
         if(currentLayerJSON) {
@@ -91,46 +86,59 @@
             geoJSON.clearLayers();
         }
         this.mymap.closePopup();
+        showGeoJSON();
+    }
+    function showGeoJSON(){
         if(listPolygon.length != 0){
-            listGeoJson = [];
-            for(var x = 0; x < listPolygon.length; x++){
-                listGeoJson.push(turf.polygon([listPolygon[x].marker], listPolygon[x].prop));
-            }
-            geojsonFeature = turf.featureCollection(listGeoJson);
-            geoJSON = L.geoJSON(geojsonFeature, {
+            geoJSON = L.geoJSON(turf.featureCollection(toGeoJSON(listPolygon, "marker", "prop")), {
                 onEachFeature: function(feature, layer) {
-                    layer.bindPopup(feature.properties.pesan + "<button class='w3-btn w3-red'>Hapus</button>");
+                    layer.on("click", function(e){
+                        currentId = layer
+                    })
+                    layer.bindTooltip("<p>" + feature.properties.pesan + "</p>")
+                    layer.bindPopup("<p>" + feature.properties.pesan + "</p><button class='w3-btn w3-red' onclick='removeGeoJSONLayer()'>Hapus</button>");
                 },
                 style: function(feature){
                     return feature.properties.style
                 }
-            }).addTo(mymap);
+            }).addTo(mymap)
             mymap.fitBounds(geoJSON.getBounds());
+            showHasil(turf.featureCollection(toGeoJSON(listPolygon, "marker", "prop")));
         }
-        showHasil();
-    };
+    }
+    function toGeoJSON(list, cordinate_name, prop_name){
+        var listGeoJson = [];
+        for(var x = 0; x < list.length; x++){
+            listGeoJson.push(turf.polygon([list[x][cordinate_name]], listPolygon[x][prop_name]));
+        }
+        return listGeoJson;
+    }
     function addPolygon(x){
         var y = [];
         for(var z = 0; z < x[0].length; z++){
             y.push([x[0][z].lng, x[0][z].lat])
         }
         y.push(y[0]);
-        listPolygon.push({marker: y,prop: {
+        listPolygon.push({
+            marker: y,
+            prop: {
                     pesan: el("pesan").value,
                     style: {
-                        fillColor: el("fillColor").value,
-                        weight: el("weight").value,
+                        fillColor: el("fillColor").value || polygonStyle.fillColor,
+                        weight: el("weight").value || polygonStyle.weight,
                         opacity: 1,
-                        color: el("color").value,
-                        dashArray: el("dashArray").value,
-                        fillOpacity: el("fillOpacity").value
+                        color: el("color").value || polygonStyle.colot,
+                        dashArray: el("dashArray").value || polygonStyle.dashArray,
+                        fillOpacity: el("fillOpacity").value || polygonStyle.fillOpacity
                     }
-                }});
+                }
+            }
+        );
         refreshMap();
     };
     function getPopUp(x){
         x = JSON.stringify(x)
-        return "<div style='width:150px;'><p><label>Warna Isian</label> <input class='w3-input w3-border' type='color' id='fillColor' /></p>" +
+        return "<div style='width:200px; height: 150px; overflow-x:hidden; overflow-y:scroll;  '><p><label>Warna Isian</label> <input class='w3-input w3-border' type='color' id='fillColor' /></p>" +
             "<p><label>Warna Pembatas</label> <input class='w3-input w3-border' type='color' id='color' /></p>" +
             "<p><label>Besar Strip Pembatas</label> <input class='w3-input w3-border' type='number' id='dashArray' /></p>" +
             "<p><label>Ketebalan Pembatas</label> <input class='w3-input w3-border' type='number' id='weight' /></p>" +
@@ -139,11 +147,19 @@
             "<button type='button' class='w3-btn w3-teal' onclick='addPolygon("+x+");'>Terapkan</button>" +
             "<button type='button' class='w3-btn w3-red' onclick='currentLayerJSON.layer.remove(); refreshMap();'>Batal</button></div>";
     };
+    function removeGeoJSON(){
+        console.log(geoJSON.getLayers())
+        geoJSON.clearLayers();
+    }
+    function removeGeoJSONLayer(){
+        geoJSON.removeLayer(currentId);
+        currentId = null;
+    }
     //EOF METHOD
     
     //START OF PROGRAM
     initMap();
-    
+    refreshMap();
     </script>
 </body>
 
