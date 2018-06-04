@@ -16,10 +16,11 @@
     <script src="leaflet.pm.min.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div class="w3-container">
         <p>Tambahkan poligon untuk melihat hasil</p>
         <div id="mapid" style="width: 500px; height: 500px;"></div>
         <hr/>
+        <table id="listMarker" class="w3-table w3-bordered"></table>
         <label>Hasil GeoJSON</label>
         <textarea id="hasil" class="w3-input w3-border"></textarea>
         <button type="button" class="w3-btn w3-red" onclick="removeGeoJSON">Reset GeoJSON</button>
@@ -53,6 +54,21 @@
     //Setiap layer baru, di masukkan ke variabel ini agar bisa dihapus jika batal membuat polygon
     var currentLayerJSON = null;
     var currentId = null;
+    var tableHead = [
+    {
+        name: "prop",
+        caption: "Isi Pesan",
+        format: function(x){ 
+            return x.pesan;
+            }
+    },
+    {
+        name: "prop",
+        caption: "Warna Poligon",
+        format: function(x){ 
+            return "<div style='width: 100px; height: 25px; background-color: " + x.style.fillColor + "; border: 5px dashed " + x.style.color +";'></div>";
+            }
+    }];
     // EOF DATA
     
     //START OF METHOD
@@ -127,7 +143,7 @@
                         fillColor: el("fillColor").value || polygonStyle.fillColor,
                         weight: el("weight").value || polygonStyle.weight,
                         opacity: 1,
-                        color: el("color").value || polygonStyle.colot,
+                        color: el("color").value || polygonStyle.color,
                         dashArray: el("dashArray").value || polygonStyle.dashArray,
                         fillOpacity: el("fillOpacity").value || polygonStyle.fillOpacity
                     }
@@ -135,6 +151,7 @@
             }
         );
         refreshMap();
+        el("listMarker").innerHTML = showTable(tableHead, listPolygon);
     };
     function getPopUp(x){
         x = JSON.stringify(x)
@@ -154,6 +171,27 @@
     function removeGeoJSONLayer(){
         geoJSON.removeLayer(currentId);
         currentId = null;
+    }
+    function showTable(head, data){
+        var thead = "", tbody = "";
+        thead += "<thead><tr class='w3-teal'>";
+        for(var x = 0; x < head.length; x++){
+            thead += "<th>" + head[x].caption + "</th>";
+        }
+        thead += "</thead></tr>";
+        
+        tbody += "<tbody>";
+        for(var x = 0; x < data.length; x++){
+            tbody += "<tr>";
+            for(var y = 0; y < head.length; y++){
+                if(head[y].format){
+                    tbody += "<td>" + head[y].format(data[x][head[y].name]) + "</td>";
+                }else tbody += "<td>" + data[x][head[y].name] + "</td>";
+            }
+            tbody += "</tr>";
+        }
+        tbody += "</tbody>";
+        return thead + tbody;
     }
     //EOF METHOD
     
