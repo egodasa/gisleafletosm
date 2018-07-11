@@ -19,6 +19,12 @@
         <h1>Contoh Penggunaan LeafletJS + OpenStreetMap + TurfJS</h1>
     </div>
     <div class="w3-container">
+        <h4>Pilih Penyedia peta</h4>
+        <select class="w3-select" style="width:75%;" onChange="gantiPeta(this.options[this.selectedIndex].value)">
+            <option value="OpenStreetMap" selected>OpenStreetMap</option>
+            <option value="Mapbox Streets">Mapbox Streets</option>
+            <option value="Mapbox Satellite">Mapbox Satellite</option>
+        </select>
         <div class="w3-row">
             <div class="w3-col l6 m12 s12 xs12">
                 <h3>Tambahkan poligon untuk melihat hasil</h3>
@@ -28,12 +34,18 @@
                 <h3>Daftar Polygon</h3>
                 <table id="listMarker" class="w3-table w3-border w3-striped w3-hover"></table>
             </div>
+            <div class="w3-col l6 m12 s12 xs12">
+                <h3>Hasil GeoJSON</h3>
+                <textarea class="w3-input w3-border" id="hasilGeoJSON"></textarea>
+                <button class="w3-button w3-blue-gray" onclick="importGeoJSON()">Import GeoJSON</button>
+            </div>
         </div>
     </div>
     <div class="w3-container w3-margin-top w3-blue-grey">
         <h3>Source: <a href="https://github.com/egodasa/gisleafletosm">github.com/egodasa/gisleafletosm</a></h3>
     </div>
     <script>
+    //START OF DATA
     var posisi = [-0.942942, 100.371857];
     var zoom = 13;
     var token = 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA';
@@ -59,9 +71,13 @@
         };
     var listMarker = [];
     var geoJSON = null;
+    var exportGeoJSON = null;
+    
     //Setiap layer baru, di masukkan ke variabel ini agar bisa dihapus jika batal membuat polygon
     var currentLayerJSON = null;
     var currentId = null;
+    
+    //Defenisi tabel poligon
     var tableHead = [
     {
         name: "_no",
@@ -97,16 +113,41 @@
     function el(x){
         return document.getElementById(x);
     }
-    function showHasil(x){
-        el("hasil").value = JSON.stringify(x);
+    function showHasilGeoJSON(){
+        if(geoJSON) el("hasilGeoJSON").value = JSON.stringify(geoJSON.toGeoJSON());
+        else el("hasilGeoJSON").value = null;
     }
-    function initMap(){
+    function initMap(peta = 'OpenStreetMap'){
+        //Token mapbox : pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA
         mymap = L.map('mapid').setView(posisi, zoom);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-            id: 'mapid'
-            }).addTo(mymap);
+        switch(peta){
+            case 'Mapbox Streets' : 
+                L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token='+token, {
+                    maxZoom: 18,
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+                        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                        'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                    id: 'mapbox.streets'
+                }).addTo(mymap);
+            break;
+            case 'Mapbox Satellite' : 
+                L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token='+token, {
+                    maxZoom: 18,
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+                        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                        'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                    id: 'mapbox.satellite'
+                }).addTo(mymap);
+            break;
+            case 'OpenStreetMap' :
+            default : 
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+                    id: 'mapid'
+                }).addTo(mymap);
+        }
+        
         mymap.pm.addControls(options);
         mymap.on('pm:create', function(e){
             //layer dimasukkan ke variabel agar bisa dihapus
@@ -141,7 +182,7 @@
                 }
             }).addTo(mymap)
             mymap.fitBounds(geoJSON.getBounds());
-            showHasil(turf.featureCollection(toGeoJSON(listMarker, "marker", "prop")));
+            showHasilGeoJSON();
         }
     }
     function toGeoJSON(list, cordinate_name, prop_name){
@@ -186,7 +227,6 @@
             "<button type='button' class='w3-btn w3-red' onclick='currentLayerJSON.layer.remove(); refreshMap();'>Batal</button></div>";
     };
     function removeGeoJSON(){
-        console.log(geoJSON.getLayers())
         geoJSON.clearLayers();
     }
     function showTable(head, data){
@@ -219,6 +259,28 @@
     }
     function deletePolygon(x){
         listMarker.splice(x,1);
+        refreshMap();
+    }
+    function importGeoJSON(){
+        if(el("hasilGeoJSON").value){
+            geoJSON = L.geoJSON(JSON.parse(el("hasilGeoJSON").value), {
+                onEachFeature: function(feature, layer) {
+                    layer.on("click", function(e){
+                        currentId = layer
+                    })
+                    layer.bindTooltip("<p>" + feature.properties.message + "</p>")
+                },
+                style: function(feature){
+                    return feature.properties.style
+                }
+            }).addTo(mymap)
+            mymap.fitBounds(geoJSON.getBounds());
+            showHasilGeoJSON();
+        } 
+    }
+    function gantiPeta(peta){
+        mymap.remove();
+        initMap(peta);
         refreshMap();
     }
     //EOF METHOD
