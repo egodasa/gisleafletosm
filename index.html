@@ -14,6 +14,8 @@
     <script src="turf.min.js"></script>
     <link rel="stylesheet" href="leaflet.pm.css" />
     <script src="leaflet.pm.min.js"></script>
+    <script src="leaflet.bing.js"></script>
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Promise"></script>
 </head>
 <body>
     <div class="w3-container w3-teal">
@@ -26,6 +28,8 @@
                 <select class="w3-select w3-small" style="width:75%;" onChange="gantiPeta(this.options[this.selectedIndex].value)">
                     <option value="OpenStreetMap" selected>OpenStreetMap</option>
                     <option value="HERE Maps">HERE Maps</option>
+                    <option value="Bing Maps Streets">Bing Maps Streets</option>
+                    <option value="Bing Maps Satellite">Bing Maps Satellite</option>
                     <option value="Mapbox Streets">Mapbox Streets</option>
                     <option value="Mapbox Satellite">Mapbox Satellite</option>
                 </select>
@@ -57,7 +61,6 @@
     //START OF DATA
     var posisi = [-0.942942, 100.371857];
     var zoom = 13;
-    var token = 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA';
     var mymap = null;
     var options = {
         position: 'topleft', // toolbar position, options are 'topleft', 'topright', 'bottomleft', 'bottomright'
@@ -141,6 +144,12 @@
                     id: 'mapbox.satellite',
                     accessToken: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA'
                 }).addTo(mymap);
+            break;
+            case 'Bing Maps Satellite' : 
+                L.tileLayer.bing({BingMapsKey: 'Amblsqmvthuv21W0xJTYBSk_Vpd8i4w_yovkDX6K8mVb-UlgkypA5uCGXiHel0rd',imagerySet: 'Road',culture: 'id'}).addTo(mymap)
+            break;
+            case 'Bing Maps Streets' : 
+                L.tileLayer.bing({BingMapsKey: 'Amblsqmvthuv21W0xJTYBSk_Vpd8i4w_yovkDX6K8mVb-UlgkypA5uCGXiHel0rd',imagerySet: 'AerialWithLabels',culture: 'id'}).addTo(mymap)
             break;
             case 'HERE Maps' : 
                 L.tileLayer.provider('HERE.terrainDay', {
@@ -295,11 +304,25 @@
         posisi = [el('lat').value, el('lng').value];
         mymap.setView(posisi, zoom);
     }
+    function getLokasi() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(pos){
+                posisi = [position.coords.latitude, position.coords.longitude]
+                el('lat').value = position.coords.latitude;
+                el('lng').value = position.coords.longitude;
+                mymap.setView(posisi, zoom)
+            });
+        }else{
+            el('lat').value = posisi[0]
+            el('lng').value = posisi[1]
+        }
+    }
     //EOF METHOD
     
     //START OF PROGRAM
     initMap();
     refreshMap();
+    getLokasi();
     </script>
 </body>
 
