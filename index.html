@@ -173,6 +173,8 @@
         mymap.on('moveend', function(e){
             posisi = [mymap.getCenter().lat, mymap.getCenter().lng]
             zoom = mymap.getZoom()
+            el('lat').value = posisi[0]
+            el('lng').value = posisi[1]
         });
         //add map controlls
         mymap.pm.addControls(options);
