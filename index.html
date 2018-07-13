@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="w3.css" />
     <link rel="stylesheet" href="leaflet.css" />
     <script src="leaflet.js"></script>
+    <script src="leaflet.providers.js"></script>
     <script src="turf.min.js"></script>
     <link rel="stylesheet" href="leaflet.pm.css" />
     <script src="leaflet.pm.min.js"></script>
@@ -19,25 +20,33 @@
         <h1>Contoh Penggunaan LeafletJS + OpenStreetMap + TurfJS</h1>
     </div>
     <div class="w3-container">
-        <h4>Pilih Penyedia peta</h4>
-        <select class="w3-select" style="width:75%;" onChange="gantiPeta(this.options[this.selectedIndex].value)">
-            <option value="OpenStreetMap" selected>OpenStreetMap</option>
-            <option value="Mapbox Streets">Mapbox Streets</option>
-            <option value="Mapbox Satellite">Mapbox Satellite</option>
-        </select>
-        <div class="w3-row">
+        <div class="w3-row-padding">
             <div class="w3-col l6 m12 s12 xs12">
-                <h3>Tambahkan poligon untuk melihat hasil</h3>
-                <div id="mapid" style="width: 500px; height: 500px;"></div>
-            </div>
-            <div class="w3-col l6 m12 s12 xs12">
+                <h4>Pilih Penyedia peta</h4>
+                <select class="w3-select w3-small" style="width:75%;" onChange="gantiPeta(this.options[this.selectedIndex].value)">
+                    <option value="OpenStreetMap" selected>OpenStreetMap</option>
+                    <option value="HERE Maps">HERE Maps</option>
+                    <option value="Mapbox Streets">Mapbox Streets</option>
+                    <option value="Mapbox Satellite">Mapbox Satellite</option>
+                </select>
+                
+                <h4>Ganti posisi peta</h4>
+                <label>Latitude (tanpa koma)</label>
+                <input class="w3-input w3-small w3-border" type="text" id="lat"/>
+                <label>Longitude (tanpa koma)</label>
+                <input class="w3-input w3-small w3-border" type="text" id="lng"/>
+                <button type="submit" class="w3-btn w3-teal w3-small" onclick="gantiPosisiPeta()">Ganti Posisi</button>
+                
                 <h3>Daftar Polygon</h3>
                 <table id="listMarker" class="w3-table w3-border w3-striped w3-hover"></table>
-            </div>
-            <div class="w3-col l6 m12 s12 xs12">
+                
                 <h3>Hasil GeoJSON</h3>
                 <textarea class="w3-input w3-border" id="hasilGeoJSON"></textarea>
-                <button class="w3-button w3-blue-gray" onclick="importGeoJSON()">Import GeoJSON</button>
+                <button class="w3-btn w3-small w3-teal" onclick="importGeoJSON()">Import GeoJSON</button>
+            </div>
+            <div class="w3-col l6 m12 s12 xs12">
+                <h3>Tambahkan poligon untuk melihat hasil</h3>
+                <div id="mapid" style="width: 100%; height: 500px;"></div>
             </div>
         </div>
     </div>
@@ -122,21 +131,21 @@
         mymap = L.map('mapid').setView(posisi, zoom);
         switch(peta){
             case 'Mapbox Streets' : 
-                L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token='+token, {
-                    maxZoom: 18,
-                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-                        'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-                    id: 'mapbox.streets'
+                L.tileLayer.provider('MapBox', {
+                    id: 'mapbox.streets',
+                    accessToken: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA'
                 }).addTo(mymap);
             break;
             case 'Mapbox Satellite' : 
-                L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token='+token, {
-                    maxZoom: 18,
-                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                        '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-                        'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-                    id: 'mapbox.satellite'
+                L.tileLayer.provider('MapBox', {
+                    id: 'mapbox.satellite',
+                    accessToken: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA'
+                }).addTo(mymap);
+            break;
+            case 'HERE Maps' : 
+                L.tileLayer.provider('HERE.terrainDay', {
+                    app_id: 'E17xLy684GUEuKvqCWjC',
+                    app_code: 'xOGYvX2MLBLm7HDvzJ4E7Q'
                 }).addTo(mymap);
             break;
             case 'OpenStreetMap' :
@@ -147,7 +156,6 @@
                     id: 'mapid'
                 }).addTo(mymap);
         }
-        
         mymap.pm.addControls(options);
         mymap.on('pm:create', function(e){
             //layer dimasukkan ke variabel agar bisa dihapus
@@ -282,6 +290,10 @@
         mymap.remove();
         initMap(peta);
         refreshMap();
+    }
+    function gantiPosisiPeta(){
+        posisi = [el('lat').value, el('lng').value];
+        mymap.setView(posisi, zoom);
     }
     //EOF METHOD
     
