@@ -3,7 +3,7 @@
 
 <head>
 
-    <title>GIS with LeafletJS</title>
+    <title>Example of GIS with LeafletJS</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
@@ -19,7 +19,7 @@
 </head>
 <body>
     <div class="w3-container w3-teal">
-        <h1>Contoh Penggunaan LeafletJS + OpenStreetMap + TurfJS</h1>
+        <h1>Example of LeafletJS with plugins</h1>
     </div>
     <div class="w3-container">
         <div class="w3-row-padding">
@@ -33,7 +33,6 @@
                     <option value="Mapbox Streets">Mapbox Streets</option>
                     <option value="Mapbox Satellite">Mapbox Satellite</option>
                 </select>
-                
                 <h4>Ganti posisi peta</h4>
                 <label>Latitude</label>
                 <input class="w3-input w3-small w3-border" type="text" id="lat"/>
@@ -145,10 +144,10 @@
                     accessToken: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA'
                 }).addTo(mymap);
             break;
-            case 'Bing Maps Satellite' : 
+            case 'Bing Maps Streets' : 
                 L.tileLayer.bing({BingMapsKey: 'Amblsqmvthuv21W0xJTYBSk_Vpd8i4w_yovkDX6K8mVb-UlgkypA5uCGXiHel0rd',imagerySet: 'Road',culture: 'id'}).addTo(mymap)
             break;
-            case 'Bing Maps Streets' : 
+            case 'Bing Maps Satellite' : 
                 L.tileLayer.bing({BingMapsKey: 'Amblsqmvthuv21W0xJTYBSk_Vpd8i4w_yovkDX6K8mVb-UlgkypA5uCGXiHel0rd',imagerySet: 'AerialWithLabels',culture: 'id'}).addTo(mymap)
             break;
             case 'HERE Maps' : 
@@ -165,7 +164,15 @@
                     id: 'mapid'
                 }).addTo(mymap);
         }
+        //map event
+        mymap.on('moveend', function(e){
+            posisi = [mymap.getCenter().lat, mymap.getCenter().lng]
+            zoom = mymap.getZoom()
+        });
+        //add map controlls
         mymap.pm.addControls(options);
+        
+        //map event
         mymap.on('pm:create', function(e){
             //layer dimasukkan ke variabel agar bisa dihapus
             currentLayerJSON = e;
