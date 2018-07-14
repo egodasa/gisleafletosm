@@ -1,0 +1,29 @@
+{
+  "name": "contoh-leafletjs",
+  "version": "1.0.0",
+  "description": "Contoh penggunaan leafletJS dengan tile server OSM dan turfJS  (GeoJSON generator) dalam rangka pembuatan Sistem Informasi Geografis. Lihat file `index.html`",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/egodasa/gisleafletosm.git"
+  },
+  "author": "Ego Dafma Dasa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/egodasa/gisleafletosm/issues"
+  },
+  "homepage": "https://github.com/egodasa/gisleafletosm#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^7.1.5",
+    "babel-preset-env": "^1.7.0",
+    "css-loader": "^1.0.0",
+    "file-loader": "^1.1.11",
+    "style-loader": "^0.21.0",
+    "webpack": "^4.16.0",
+    "webpack-dev-server": "^3.1.4"
+  }
+}
