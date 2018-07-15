@@ -12,7 +12,7 @@ import 'promise-polyfill/src/polyfill';
     var zoom = 13;
     
     //variabel penampung peta
-    var mymap = L.map('mapid').setView(posisi, zoom);
+    var mymap = new L.Map('mapid').setView(posisi, zoom);
     
     //variabel penampung pengaturan control yang ingin dimunculkan
     var options = {
