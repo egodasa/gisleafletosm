@@ -1,9 +1,23 @@
 //START OF DATA
+    //daftar penyedia peta
+    var mapbox = {
+        key: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA',
+        id: ['mapbox.streets','mapbox.satellite']
+    }
+    var hereMaps = {
+        app_id: 'E17xLy684GUEuKvqCWjC',
+        app_code: 'xOGYvX2MLBLm7HDvzJ4E7Q',
+        variant: ['normal.day','hybrid.day']
+    }
+    var bingMaps = {
+        BingMapsKey: 'Amblsqmvthuv21W0xJTYBSk_Vpd8i4w_yovkDX6K8mVb-UlgkypA5uCGXiHel0rd',
+        imagerySet: ['Road','AerialWithLabels'],
+        culture: 'id'
+    }
+    
+    //defenisi posisi dan zoom peta
     var posisi = [-0.942942, 100.371857];
     var zoom = 13;
-    
-    //variabel penampung peta
-    var mymap = L.map('mapid').setView(posisi, zoom);
     
     //variabel penampung pengaturan control yang ingin dimunculkan
     var options = {
@@ -44,8 +58,27 @@
     }
     
     //variabel penampung list poligon dalam bentuk geojson
-    var layerPoligon = L.geoJSON(null, optionPoligon).addTo(mymap);
+    var layerPoligon = L.geoJSON(null, optionPoligon);
     
+    //variabel yang berisi berbagai macam layer dari berbagai penyedia layanan peta
+    var OpenStreetMap = L.tileLayer.provider('OpenStreetMap');
+    
+    //variabel penampung peta
+    var mymap = L.map('mapid', {layers: [OpenStreetMap, layerPoligon]}).setView(posisi, zoom);
+    
+    //variabel untuk penampung daftar layer yang bisa dipakai termasuk layer poligon
+    var penyediaPeta = {
+        "OpenStreetMap": OpenStreetMap,
+        "Mapbox Streets": L.tileLayer.provider('MapBox', {id: mapbox.id[0], accessToken: mapbox.key}),
+        "Mapbox Satelite": L.tileLayer.provider('MapBox', {id: mapbox.id[1], accessToken: mapbox.key}),
+        "Bing Streets": L.tileLayer.bing({BingMapsKey: bingMaps.BingMapsKey, imagerySet: bingMaps.imagerySet[0], culture: bingMaps.culture}),
+        "Bing Satelite": L.tileLayer.bing({BingMapsKey: bingMaps.BingMapsKey, imagerySet: bingMaps.imagerySet[1], culture: bingMaps.culture}),
+        "HERE Streets": L.tileLayer.provider('HERE.terrainDay', {app_id: hereMaps.app_id, app_code: hereMaps.app_code}),
+        "HERE Satellite": L.tileLayer.provider('HERE.hybridDay', {app_id: hereMaps.app_id, app_code: hereMaps.app_code})
+    }
+    var penyediaPoligon = {
+        "Daftar Poligon": layerPoligon
+    }
     //Setiap layer baru, di masukkan ke variabel ini agar bisa dihapus jika batal membuat polygon
     var currentLayerJSON = null;
     var currentId = null;
@@ -86,41 +119,8 @@
     function el(x){
         return document.getElementById(x);
     }
-    function initMap(peta = 'OpenStreetMap'){
-        //Token mapbox : pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA
-        switch(peta){
-            case 'Mapbox Streets' : 
-                L.tileLayer.provider('MapBox', {
-                    id: 'mapbox.streets',
-                    accessToken: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA'
-                }).addTo(mymap);
-            break;
-            case 'Mapbox Satellite' : 
-                L.tileLayer.provider('MapBox', {
-                    id: 'mapbox.satellite',
-                    accessToken: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA'
-                }).addTo(mymap);
-            break;
-            case 'Bing Maps Streets' : 
-                L.tileLayer.bing({BingMapsKey: 'Amblsqmvthuv21W0xJTYBSk_Vpd8i4w_yovkDX6K8mVb-UlgkypA5uCGXiHel0rd',imagerySet: 'Road',culture: 'id'}).addTo(mymap)
-            break;
-            case 'Bing Maps Satellite' : 
-                L.tileLayer.bing({BingMapsKey: 'Amblsqmvthuv21W0xJTYBSk_Vpd8i4w_yovkDX6K8mVb-UlgkypA5uCGXiHel0rd',imagerySet: 'AerialWithLabels',culture: 'id'}).addTo(mymap)
-            break;
-            case 'HERE Maps' : 
-                L.tileLayer.provider('HERE.terrainDay', {
-                    app_id: 'E17xLy684GUEuKvqCWjC',
-                    app_code: 'xOGYvX2MLBLm7HDvzJ4E7Q'
-                }).addTo(mymap);
-            break;
-            case 'OpenStreetMap' :
-            default : 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 18,
-                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-                    id: 'mapid'
-                }).addTo(mymap);
-        }
+    function initMap(){
+        L.control.layers(penyediaPeta, penyediaPoligon).addTo(mymap);
         //map event
         mymap.on('moveend', function(e){
             posisi = [mymap.getCenter().lat, mymap.getCenter().lng]
@@ -232,11 +232,6 @@
     function deletePolygon(x){
         //hapus salah satu geojson dari variabel dan dilooping ulang di metod refreshMap()
         listPolygon.splice(x,1);
-        refreshMap();
-    }
-    function gantiPeta(peta){
-        mymap.remove();
-        initMap(peta);
         refreshMap();
     }
     function gantiPosisiPeta(){
