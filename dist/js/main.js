@@ -3,7 +3,7 @@
     var zoom = 13;
     
     //variabel penampung peta
-    var mymap = null;
+    var mymap = L.map('mapid').setView(posisi, zoom);
     
     //variabel penampung pengaturan control yang ingin dimunculkan
     var options = {
@@ -26,12 +26,25 @@
             dashArray: '3',
             fillOpacity: 0.7
         };
-        
-    //variabel penampung list poligon
-    var listMarker = [];
     
     //variabel penampung list poligon dalam bentuk geojson
-    var geoJSON = null;
+    var listPolygon = [];
+    
+    //variabel penampung option dari setiap layer poligon
+    var optionPoligon = {
+        onEachFeature: function(feature, layer) {
+            layer.on("click", function(e){
+                currentId = layer
+            })
+            layer.bindTooltip("<p>" + feature.properties.message + "</p>")
+        },
+        style: function(feature){
+            return feature.properties.style
+        }
+    }
+    
+    //variabel penampung list poligon dalam bentuk geojson
+    var layerPoligon = L.geoJSON(null, optionPoligon).addTo(mymap);
     
     //Setiap layer baru, di masukkan ke variabel ini agar bisa dihapus jika batal membuat polygon
     var currentLayerJSON = null;
@@ -73,13 +86,8 @@
     function el(x){
         return document.getElementById(x);
     }
-    function showHasilGeoJSON(){
-        if(geoJSON) el("hasilGeoJSON").value = JSON.stringify(geoJSON.toGeoJSON());
-        else el("hasilGeoJSON").value = null;
-    }
     function initMap(peta = 'OpenStreetMap'){
         //Token mapbox : pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA
-        mymap = L.map('mapid').setView(posisi, zoom);
         switch(peta){
             case 'Mapbox Streets' : 
                 L.tileLayer.provider('MapBox', {
@@ -136,34 +144,23 @@
         if(currentLayerJSON) {
             currentLayerJSON.layer.remove();
         }
-        if(geoJSON){
-            geoJSON.clearLayers();
-        }
+        layerPoligon.clearLayers();
         this.mymap.closePopup();
-        el("listMarker").innerHTML = showTable(tableHead, listMarker);
-        showGeoJSON();
+        el("listPolygon").innerHTML = showTable(tableHead, listPolygon);
+        tampilkanDaftarPolygon();
     }
-    function showGeoJSON(){
-        if(listMarker.length != 0){
-            geoJSON = L.geoJSON(turf.featureCollection(toGeoJSON(listMarker, "marker", "prop")), {
-                onEachFeature: function(feature, layer) {
-                    layer.on("click", function(e){
-                        currentId = layer
-                    })
-                    layer.bindTooltip("<p>" + feature.properties.message + "</p>")
-                },
-                style: function(feature){
-                    return feature.properties.style
-                }
-            }).addTo(mymap)
-            mymap.fitBounds(geoJSON.getBounds());
-            showHasilGeoJSON();
+    //looping listpoligon dan di add ke layerpoligon untuk ditampilkan ke peta
+    function tampilkanDaftarPolygon(){
+        if(listPolygon.length != 0){
+            layerPoligon.addData(turf.featureCollection(toGeoJSON(listPolygon, "marker", "prop")));
+            mymap.fitBounds(layerPoligon.getBounds());
         }
     }
+    //method untuk menterjemahkan data js ke geojson
     function toGeoJSON(list, cordinate_name, prop_name){
         var listGeoJson = [];
         for(var x = 0; x < list.length; x++){
-            listGeoJson.push(turf.polygon([list[x][cordinate_name]], listMarker[x][prop_name]));
+            listGeoJson.push(turf.polygon([list[x][cordinate_name]], listPolygon[x][prop_name]));
         }
         return listGeoJson;
     }
@@ -173,7 +170,7 @@
             y.push([x[0][z].lng, x[0][z].lat])
         }
         y.push(y[0]);
-        listMarker.push({
+        listPolygon.push({
             marker: y,
             prop: {
                     message: el("message").value,
@@ -202,7 +199,7 @@
             "<button type='button' class='w3-btn w3-red' onclick='currentLayerJSON.layer.remove(); refreshMap();'>Batal</button></div>";
     };
     function removeGeoJSON(){
-        geoJSON.clearLayers();
+        layerPoligon.clearLayers();
     }
     function showTable(head, data){
         var thead = "", tbody = "";
@@ -233,25 +230,9 @@
         return thead + tbody;
     }
     function deletePolygon(x){
-        listMarker.splice(x,1);
+        //hapus salah satu geojson dari variabel dan dilooping ulang di metod refreshMap()
+        listPolygon.splice(x,1);
         refreshMap();
-    }
-    function importGeoJSON(){
-        if(el("hasilGeoJSON").value){
-            geoJSON = L.geoJSON(JSON.parse(el("hasilGeoJSON").value), {
-                onEachFeature: function(feature, layer) {
-                    layer.on("click", function(e){
-                        currentId = layer
-                    })
-                    layer.bindTooltip("<p>" + feature.properties.message + "</p>")
-                },
-                style: function(feature){
-                    return feature.properties.style
-                }
-            }).addTo(mymap)
-            mymap.fitBounds(geoJSON.getBounds());
-            showHasilGeoJSON();
-        } 
     }
     function gantiPeta(peta){
         mymap.remove();
