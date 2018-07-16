@@ -1,4 +1,5 @@
 //START OF DATA
+    var lokasi_saya = null,interval_lokasi_saya = null;
     //daftar penyedia peta
     var mapbox = {
         key: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA',
@@ -244,11 +245,47 @@
                 posisi = [position.coords.latitude, position.coords.longitude]
                 el('lat').value = position.coords.latitude;
                 el('lng').value = position.coords.longitude;
-                mymap.setView(posisi, zoom)
+                if(lokasi_saya){
+                    lokasi_saya.setLatLng([position.coords.latitude, position.coords.longitude]);
+                }else{
+                    lokasi_saya = L.marker([position.coords.latitude, position.coords.longitude]).addTo(mymap);
+                    console.log('Posisi inisialisasi');
+                    mymap.setView(posisi, zoom)
+                }
             });
         }else{
             el('lat').value = posisi[0]
             el('lng').value = posisi[1]
+            return false;
+        }
+    }
+    function temukanLokasi(){
+        if(interval_lokasi_saya){
+            clearInterval(lokasi_saya);
+        }
+        if(getLokasi() != false){
+            console.log('lokasi ditemukan');
+            interval_lokasi_saya = setInterval(function(){
+                if(getLokasi() != false){
+                    if(lokasi_saya){
+                        lokasi_saya.setLatLng(posisi);
+                        console.log('Posisi update ');
+                    }else{
+                        lokasi_saya = L.marker(posisi).addTo(mymap);
+                        console.log('Posisi inisialisasi');
+                        mymap.setView(posisi, zoom)
+                    }
+                }else{
+                    if(lokasi_saya){
+                        clearInterval(lokasi_saya);
+                        console.log('posisi dihapus');
+                    }else{
+                        console.log('lokasi tidak ditemukan');
+                    }
+                }
+            },'5000');
+        }else{
+            console.log('lokasi tidak ditemukan');
         }
     }
     //EOF METHOD
@@ -257,3 +294,4 @@
     initMap();
     refreshMap();
     getLokasi();
+    temukanLokasi();
