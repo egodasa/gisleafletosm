@@ -1,5 +1,5 @@
 //START OF DATA
-    var lokasi_saya = null,interval_lokasi_saya = null;
+    var lokasi_saya = null,interval_lokasi_saya = null,koordinat_lokasi_saya = null;
     //daftar penyedia peta
     var mapbox = {
         key: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA',
@@ -245,12 +245,13 @@
                 posisi = [position.coords.latitude, position.coords.longitude]
                 el('lat').value = position.coords.latitude;
                 el('lng').value = position.coords.longitude;
+                koordinat_lokasi_saya = [position.coords.latitude, position.coords.longitude];
                 if(lokasi_saya){
-                    lokasi_saya.setLatLng([position.coords.latitude, position.coords.longitude]);
+                    lokasi_saya.setLatLng(koordinat_lokasi_saya);
                 }else{
-                    lokasi_saya = L.marker([position.coords.latitude, position.coords.longitude]).addTo(mymap);
+                    lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
                     console.log('Posisi inisialisasi');
-                    mymap.setView(posisi, zoom)
+                    mymap.setView(koordinat_lokasi_saya, zoom)
                 }
             });
         }else{
@@ -268,12 +269,12 @@
             interval_lokasi_saya = setInterval(function(){
                 if(getLokasi() != false){
                     if(lokasi_saya){
-                        lokasi_saya.setLatLng(posisi);
+                        lokasi_saya.setLatLng(koordinat_lokasi_saya);
                         console.log('Posisi update ');
                     }else{
-                        lokasi_saya = L.marker(posisi).addTo(mymap);
+                        lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
                         console.log('Posisi inisialisasi');
-                        mymap.setView(posisi, zoom)
+                        mymap.setView(koordinat_lokasi_saya, zoom)
                     }
                 }else{
                     if(lokasi_saya){
@@ -287,6 +288,11 @@
         }else{
             console.log('lokasi tidak ditemukan');
         }
+    }
+    function matikanLokasi(){
+        clearInterval(interval_lokasi_saya);
+        lokasi_saya.remove();
+        lokasi_saya = null;
     }
     //EOF METHOD
     
