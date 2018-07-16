@@ -262,7 +262,7 @@
     }
     function temukanLokasi(){
         if(interval_lokasi_saya){
-            clearInterval(lokasi_saya);
+            matikanLokasi();
         }
         if(getLokasi() != false){
             console.log('lokasi ditemukan');
