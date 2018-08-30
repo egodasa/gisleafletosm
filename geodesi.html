@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html>
+ <head>
+	<title>Leaflet.Geodesic Example - by Henry Thasler</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+	<style type="text/css">
+		    body {
+			    padding: 0;
+			    margin: 0;
+		    }
+		    html, body, #map {
+			    height: 100%;
+		    }
+		    .info {
+			padding: 6px 8px;
+			font: 14px/16px Arial, Helvetica, sans-serif;
+			background: white;
+			background: rgba(255,255,255,0.8);
+			box-shadow: 0 0 15px rgba(0,0,0,0.2);
+			border-radius: 5px;
+		    }
+		    .info h4 {
+			padding-right: 5px;
+			margin: 0 0 5px;
+		    }
+	</style>
+
+        <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+	<script src="https://www.thasler.com/leaflet.geodesic/Leaflet.Geodesic.js"></script>
+ </head>
+ <body>
+	<div id="map"></div>
+	<script>
+    alert("Silahkan geser tiga marker yang ada diluar lingkaran untuk mengetahui apakah ia berada diluar atau didalam 1km")
+		var map = L.map('map').setView([0, -180], 3);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 15,
+			noWrap: false,
+			attribution: 'Data by OpenStreetMap'
+		}).addTo(map);
+    
+    function MkeKm(m){
+      return (m/1000).toFixed(0)
+    }
+    function Jarak(arr1, arr2){
+      return MkeKm(L.latLng(arr1).distanceTo(L.latLng(arr2)).toFixed(0))
+    }
+
+    map.locate({setView: true, watch: true, maxZoom: 15});
+    var posisi = L.marker();
+    var marker1 = L.marker();
+    var marker2 = L.marker();
+    var marker3 = L.marker();
+    var lingkaran = L.circle();
+    map.on('locationfound', function(e) {
+        posisi.setLatLng(e.latlng).addTo(map); //set marker
+        marker1 = L.marker([e.latlng.lat + 0.01 , e.latlng.lng - 0.01], {draggable: true}).addTo(map); //set marker
+        marker2 = L.marker([e.latlng.lat + 0.01 , e.latlng.lng + 0.01], {draggable: true}).addTo(map); //set marker
+        marker3 = L.marker([e.latlng.lat - 0.01 , e.latlng.lng - 0.01], {draggable: true}).addTo(map); //set marker
+        lingkaran.setLatLng(e.latlng).setRadius(500).addTo(map) //set lingkaran
+        console.log(Jarak(e.latlng, [34.858333, 136.805278]) + " Km")
+        map.setZoom(13)
+        marker1.on('drag',function(e){
+          var pesan = ""
+          var jarak = Jarak(posisi.getLatLng(), [e.latlng.lat, e.latlng.lng])
+          console.log(jarak)
+          if(jarak <= 0 ){
+            pesan = "Didalam 1km"
+          }else{
+            pesan = "Diluar 1km"
+          }
+          marker1.bindPopup(pesan).openPopup();
+        })
+        marker2.on('drag',function(e){
+          var pesan = ""
+          var jarak = Jarak(posisi.getLatLng(), [e.latlng.lat, e.latlng.lng])
+          console.log(jarak)
+          if(jarak <= 0 ){
+            pesan = "Didalam 1km"
+          }else{
+            pesan = "Diluar 1km"
+          }
+          marker2.bindPopup(pesan).openPopup();
+        })
+        marker3.on('drag',function(e){
+          var pesan = ""
+          var jarak = Jarak(posisi.getLatLng(), [e.latlng.lat, e.latlng.lng])
+          console.log(jarak)
+          if(jarak <= 0 ){
+            pesan = "Didalam 1km"
+          }else{
+            pesan = "Diluar 1km"
+          }
+          marker3.bindPopup(pesan).openPopup();
+        })
+    });
+	</script>
+ </body>
+</html>
