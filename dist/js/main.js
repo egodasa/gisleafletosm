@@ -287,32 +287,43 @@
         }
         else
         {
-            // lokasi tidak ditemukan/tidak aktif gps
-            el('lat').value = posisi[0]
-            el('lng').value = posisi[1]
-            return false;
+            alert("Perangkat/browser Anda tidak mendukung deteksi lokasi dengan GPS. Silahkan ganti perangkat/browser Anda ke perangkat yang didukung...");
         }
+    }
+    // fungsi untuk cek status lokasi gps
+    function lokasiTersedia()
+    {
+        return koordinat_lokasi_saya !== null;
     }
 
     // fungsi yang dieksekusi saat lokasi ditemukan setiap 5 detik
     function callbackGetLokasiRealtime()
     {
-        if(getLokasi() != false){
-            if(lokasi_saya){
+        if(lokasiTersedia())
+        {
+            // jika marker lokasi sudah ada, cukup ganti posisi marker
+            if(lokasi_saya)
+            {
                 lokasi_saya.setLatLng(koordinat_lokasi_saya);
                 console.log('Posisi update ');
-            }else{
+            }
+            else
+            {
+                // jika marker belum ada, buat marker untuk menunjukan lokasi user
                 lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
                 console.log('Posisi inisialisasi');
                 mymap.setView(koordinat_lokasi_saya, zoom)
             }
-        }else{
-            if(lokasi_saya){
-                clearInterval(lokasi_saya);
+        }
+        else
+        {
+            // lokasi tidak ditemukan, hapus pengecekan lokasi realtime
+            if(interval_lokasi_saya){
+                matikanLokasi();
                 console.log('posisi dihapus');
-            }else{
-                console.log('lokasi tidak ditemukan');
             }
+            console.log('lokasi tidak ditemukan');
+            alert("Lokasi tidak ditemukan. Silahkan muat ulang halaman ini...);
         }
     }
         
@@ -324,12 +335,16 @@
         }
 
         // temukan lokasi user percobaan pertama kali
-        if(getLokasi() != false){
+        if(lokasiTersedia())
+        {
             console.log('lokasi ditemukan');
 
             // jika lokasi ditemukan, set interval/eksekusi fungsi get lokasi setiap 5 detik
             interval_lokasi_saya = setInterval(callbackGetLokasiRealtime, '5000');
-        }else{
+        }
+        else
+        {
+            alert("Lokasi tidak ditemukan. Silahkan muat ulang halaman ini...");
             console.log('lokasi tidak ditemukan');
         }
     }
