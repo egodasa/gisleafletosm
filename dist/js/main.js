@@ -262,20 +262,23 @@
     }
     function callbackGetLokasiGagal(error)
     {
+        var pesan = "Silahkan muat ulang halaman ini...";
+        var pesan_error = "";
         switch(error.code) {
         case error.PERMISSION_DENIED:
-          alert("Akses ke GPS gagal. Silahkan muat ulang halaman ini...");
+          pesan_error = "Akses ke GPS gagal.";
           break;
         case error.POSITION_UNAVAILABLE:
-          alert("Lokasi tidak ditemukan...");
+          pesan_error = "Lokasi tidak tersedia.";
           break;
         case error.TIMEOUT:
-          alert("Gagal mengambil lokasi. Silahkan muat ulang halaman ini...");
+          pesan_error = "Gagal mengambil lokasi.";
           break;
         case error.UNKNOWN_ERROR:
-          alert("GPS error. Silahkan muat ulang halaman ini...");
+          pesan_error = "GPS error.";
           break;
       }
+        alert(pesan_error + pesan);
     }
 
     // fungsi untuk menemukan lokasi dengan gps. Hanya sekali eksekusi/tidak realtime.
