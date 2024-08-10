@@ -239,52 +239,96 @@
         posisi = [el('lat').value, el('lng').value];
         mymap.setView(posisi, zoom);
     }
+    function callbackGetLokasiBerhasil(position)
+    {
+        // jika koordinat sekarang masih sama dengan yang sebelumnya, jangan update peta atau marker lokasi saya
+        if(koordinat_lokasi_saya === null || (koordinat_lokasi_saya[0] != position.coords.latitude && koordinat_lokasi_saya[1] != position.coords.longitude))
+        {
+            koordinat_lokasi_saya = [position.coords.latitude, position.coords.longitude];
+            posisi = [position.coords.latitude, position.coords.longitude]
+            el('lat').value = position.coords.latitude;
+            el('lng').value = position.coords.longitude;
+            if(lokasi_saya)
+            {
+                lokasi_saya.setLatLng(koordinat_lokasi_saya);
+            }
+            else
+            {
+                lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
+                console.log('Posisi inisialisasi');
+                mymap.setView(koordinat_lokasi_saya, zoom)
+            }
+        }
+    }
+    function callbackGetLokasiGagal(error)
+    {
+        switch(error.code) {
+        case error.PERMISSION_DENIED:
+          alert("Akses ke GPS gagal. Silahkan muat ulang halaman ini...");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          alert("Lokasi tidak ditemukan...");
+          break;
+        case error.TIMEOUT:
+          alert("Gagal mengambil lokasi. Silahkan muat ulang halaman ini...");
+          break;
+        case error.UNKNOWN_ERROR:
+          alert("GPS error. Silahkan muat ulang halaman ini...");
+          break;
+      }
+    }
+
+    // fungsi untuk menemukan lokasi dengan gps. Hanya sekali eksekusi/tidak realtime.
     function getLokasi() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position){
-                posisi = [position.coords.latitude, position.coords.longitude]
-                el('lat').value = position.coords.latitude;
-                el('lng').value = position.coords.longitude;
-                koordinat_lokasi_saya = [position.coords.latitude, position.coords.longitude];
-                if(lokasi_saya){
-                    lokasi_saya.setLatLng(koordinat_lokasi_saya);
-                }else{
-                    lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
-                    console.log('Posisi inisialisasi');
-                    mymap.setView(koordinat_lokasi_saya, zoom)
-                }
-            });
-        }else{
+        // lokasi ditemukan
+        if (navigator.geolocation)
+        {
+            navigator.geolocation.getCurrentPosition(callbackGetLokasiBerhasil, callbackGetLokasiGagal);
+        }
+        else
+        {
+            // lokasi tidak ditemukan/tidak aktif gps
             el('lat').value = posisi[0]
             el('lng').value = posisi[1]
             return false;
         }
     }
+
+    // fungsi yang dieksekusi saat lokasi ditemukan setiap 5 detik
+    function callbackGetLokasiRealtime()
+    {
+        if(getLokasi() != false){
+            if(lokasi_saya){
+                lokasi_saya.setLatLng(koordinat_lokasi_saya);
+                console.log('Posisi update ');
+            }else{
+                lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
+                console.log('Posisi inisialisasi');
+                mymap.setView(koordinat_lokasi_saya, zoom)
+            }
+        }else{
+            if(lokasi_saya){
+                clearInterval(lokasi_saya);
+                console.log('posisi dihapus');
+            }else{
+                console.log('lokasi tidak ditemukan');
+            }
+        }
+    }
+        
+    // temukan lokasi user secara realtime setiap 5 detik menggunakan set interval
     function temukanLokasi(){
+        // cek apakah lokasi realtime sudah aktif atau tidak
         if(interval_lokasi_saya){
             matikanLokasi();
         }
+
+        // temukan lokasi user percobaan pertama kali
         if(getLokasi() != false){
             console.log('lokasi ditemukan');
-            interval_lokasi_saya = setInterval(function(){
-                if(getLokasi() != false){
-                    if(lokasi_saya){
-                        lokasi_saya.setLatLng(koordinat_lokasi_saya);
-                        console.log('Posisi update ');
-                    }else{
-                        lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
-                        console.log('Posisi inisialisasi');
-                        mymap.setView(koordinat_lokasi_saya, zoom)
-                    }
-                }else{
-                    if(lokasi_saya){
-                        clearInterval(lokasi_saya);
-                        console.log('posisi dihapus');
-                    }else{
-                        console.log('lokasi tidak ditemukan');
-                    }
-                }
-            },'5000');
+
+            // jika lokasi ditemukan, set interval/eksekusi fungsi get lokasi setiap 5 detik
+            interval_lokasi_saya = setInterval(callbackGetLokasiRealtime, '5000');
         }else{
             console.log('lokasi tidak ditemukan');
         }
