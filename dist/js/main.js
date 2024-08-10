@@ -311,10 +311,18 @@
             interval_lokasi_saya = setInterval(getLokasi, "5000");
         }   
     }
-    function matikanLokasi(){
-        clearInterval(interval_lokasi_saya);
-        lokasi_saya.remove();
-        lokasi_saya = null;
+    function matikanLokasi()
+    {
+        if(interval_lokasi_saya)
+        {
+            clearInterval(interval_lokasi_saya);
+            if(lokasi_saya)
+            {
+                lokasi_saya.remove();
+                lokasi_saya = null;
+                koordinat_lokasi_saya = null
+            }
+        }
     }
     //EOF METHOD
     
