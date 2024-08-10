@@ -324,7 +324,7 @@
                 console.log('posisi dihapus');
             }
             console.log('lokasi tidak ditemukan');
-            alert("Lokasi tidak ditemukan. Silahkan muat ulang halaman ini...);
+            alert("Lokasi tidak ditemukan. Silahkan muat ulang halaman ini...");
         }
     }
         
