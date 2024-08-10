@@ -257,7 +257,8 @@
                 lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
                 console.log('Posisi inisialisasi');
                 mymap.setView(koordinat_lokasi_saya, zoom)
-            }            
+            }
+            setLokasiRealtime();
         }
     }
     function callbackGetLokasiGagal(error)
@@ -320,4 +321,4 @@
     //START OF PROGRAM
     initMap();
     refreshMap();
-    setLokasiRealtime();
+    getLokasi();
