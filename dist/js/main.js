@@ -236,8 +236,14 @@
         refreshMap();
     }
     function gantiPosisiPeta(){
-        posisi = [el('lat').value, el('lng').value];
-        mymap.setView(posisi, zoom);
+        if(koordinat_lokasi_saya === null)
+        {
+            alert("Lokasi belum ditemukan. Silahkan klik tombol 'LOKASI SAYA'...")
+        }
+        else
+        {
+            mymap.setView(koordinat_lokasi_saya, zoom);
+        }
     }
     function callbackGetLokasiBerhasil(position)
     {
