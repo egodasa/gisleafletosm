@@ -312,13 +312,14 @@
                 // jika marker belum ada, buat marker untuk menunjukan lokasi user
                 lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
                 console.log('Posisi inisialisasi');
-                mymap.setView(koordinat_lokasi_saya, zoom)
+                mymap.setView(koordinat_lokasi_saya, zoom);
             }
         }
         else
         {
             // lokasi tidak ditemukan, hapus pengecekan lokasi realtime
-            if(interval_lokasi_saya){
+            if(interval_lokasi_saya)
+            {
                 matikanLokasi();
                 console.log('posisi dihapus');
             }
