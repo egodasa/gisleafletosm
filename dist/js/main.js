@@ -254,13 +254,13 @@
             posisi = [position.coords.latitude, position.coords.longitude]
             el('lat').value = position.coords.latitude;
             el('lng').value = position.coords.longitude;
-            if(lokasi_saya)
+            if(marker_lokasi_saya)
             {
-                lokasi_saya.setLatLng(koordinat_lokasi_saya);
+                marker_lokasi_saya.setLatLng(koordinat_lokasi_saya);
             }
             else
             {
-                lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
+                marker_lokasi_saya = L.marker(koordinat_lokasi_saya).addTo(mymap);
                 console.log('Posisi inisialisasi');
                 mymap.setView(koordinat_lokasi_saya, zoom)
             }
@@ -322,10 +322,10 @@
         if(interval_lokasi_saya)
         {
             clearInterval(interval_lokasi_saya);
-            if(lokasi_saya)
+            if(marker_lokasi_saya)
             {
-                lokasi_saya.remove();
-                lokasi_saya = null;
+                marker_lokasi_saya.remove();
+                marker_lokasi_saya = null;
                 koordinat_lokasi_saya = null
             }
         }
