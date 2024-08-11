@@ -1,5 +1,5 @@
 //START OF DATA
-    var lokasi_saya = null,interval_lokasi_saya = null,koordinat_lokasi_saya = null;
+    var marker_lokasi_saya = null,interval_lokasi_saya = null,koordinat_lokasi_saya = null;
     //daftar penyedia peta
     var mapbox = {
         key: 'pk.eyJ1IjoiZWdvZGFzYSIsImEiOiJjamd4NWkyMmwwNms2MnhsamJvaWQ3NGZmIn0.6ok1IiPZ0sPNXmiIe-iEWA',
